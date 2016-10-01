@@ -950,6 +950,7 @@ func TestIsMultibyte(t *testing.T) {
 		{"test＠example.com", true},
 		{"1234abcDEｘｙｚ", true},
 		{"ｶﾀｶﾅ", true},
+		{"", true},
 	}
 	for _, test := range tests {
 		actual := IsMultibyte(test.param)
@@ -1735,19 +1736,19 @@ func TestByteLength(t *testing.T) {
 
 	var tests = []struct {
 		value    string
-		min      string
-		max      string
+		params   []string
 		expected bool
 	}{
-		{"123456", "0", "100", true},
-		{"1239999", "0", "0", false},
-		{"1239asdfasf99", "100", "200", false},
-		{"1239999asdff29", "10", "30", true},
+		{"123456", []string{"0", "100"}, true},
+		{"1239999", []string{"0", "0"}, false},
+		{"1239asdfasf99", []string{"100", "200"}, false},
+		{"1239999asdff29", []string{"10", "30"}, true},
+		{"1239999asdff29", []string{"10"}, false},
 	}
 	for _, test := range tests {
-		actual := ByteLength(test.value, test.min, test.max)
+		actual := ByteLength(test.value, test.params...)
 		if actual != test.expected {
-			t.Errorf("Expected ByteLength(%s, %s, %s) to be %v, got %v", test.value, test.min, test.max, test.expected, actual)
+			t.Errorf("Expected ByteLength(%s, %s) to be %v, got %v", test.value, strings.Join(test.params, ", "), test.expected, actual)
 		}
 	}
 }
@@ -1757,23 +1758,23 @@ func TestStringLength(t *testing.T) {
 
 	var tests = []struct {
 		value    string
-		min      string
-		max      string
+		params   []string
 		expected bool
 	}{
-		{"123456", "0", "100", true},
-		{"1239999", "0", "0", false},
-		{"1239asdfasf99", "100", "200", false},
-		{"1239999asdff29", "10", "30", true},
-		{"あいうえお", "0", "5", true},
-		{"あいうえおか", "0", "5", false},
-		{"あいうえお", "0", "0", false},
-		{"あいうえ", "5", "10", false},
+		{"123456", []string{"0", "100"}, true},
+		{"1239999", []string{"0", "0"}, false},
+		{"1239asdfasf99", []string{"100", "200"}, false},
+		{"1239999asdff29", []string{"10", "30"}, true},
+		{"1239999asdff29", []string{"8"}, false},
+		{"あいうえお", []string{"0", "5"}, true},
+		{"あいうえおか", []string{"0", "5"}, false},
+		{"あいうえお", []string{"0", "0"}, false},
+		{"あいうえ", []string{"5", "10"}, false},
 	}
 	for _, test := range tests {
-		actual := StringLength(test.value, test.min, test.max)
+		actual := StringLength(test.value, test.params...)
 		if actual != test.expected {
-			t.Errorf("Expected StringLength(%s, %s, %s) to be %v, got %v", test.value, test.min, test.max, test.expected, actual)
+			t.Errorf("Expected StringLength(%s, %s) to be %v, got %v", test.value, strings.Join(test.params, ", "), test.expected, actual)
 		}
 	}
 }
@@ -2406,6 +2407,27 @@ func TestIsCIDR(t *testing.T) {
 		actual := IsCIDR(test.param)
 		if actual != test.expected {
 			t.Errorf("Expected IsCIDR(%q) to be %v, got %v", test.param, test.expected, actual)
+		}
+	}
+}
+
+func TestStringMatches(t *testing.T) {
+	t.Parallel()
+
+	var tests = []struct {
+		s        string
+		match    []string
+		expected bool
+	}{
+		{"test", []string{"test"}, true},
+		{"test", []string{"notTest"}, false},
+		{"", []string{""}, true},
+		{"", []string{"", ""}, false},
+	}
+	for _, test := range tests {
+		actual := StringMatches(test.s, test.match...)
+		if actual != test.expected {
+			t.Errorf("Expected StringMatches(%q, %q) to be %v, got %v", test.s, strings.Join(test.match, ", "), test.expected, actual)
 		}
 	}
 }
