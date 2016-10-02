@@ -587,7 +587,7 @@ func TestIsURL(t *testing.T) {
 		{"http://foobar.com/a-", true},
 		{"http://foobar.پاکستان/", true},
 		{"http://foobar.c_o_m", false},
-		{"", false},
+		{"notaurlatall", false},
 		{"xyz://foobar.com", false},
 		{"invalid.", false},
 		{".com", false},
